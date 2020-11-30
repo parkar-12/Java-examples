@@ -19,7 +19,6 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 
 
 public class OrcReader implements Runnable {
-    private static final Logger sLogger = Logger.getLogger(OrcReader.class);
     private static final Configuration CONF = new Configuration();
     private Path path;
     private Queue queue;
@@ -29,7 +28,7 @@ public class OrcReader implements Runnable {
     }
     @Override
     public void run() {
-        LogSF.info(sLogger,"Inside Thread{}",Thread.currentThread().getName());
+        System.out.println("Inside Thread{}"+Thread.currentThread().getName());
         try {
             Reader reader= OrcFile.createReader(path.getFileSystem(CONF),path);
             StructObjectInspector inspector = (StructObjectInspector)reader.getObjectInspector();
@@ -37,9 +36,9 @@ public class OrcReader implements Runnable {
             RecordReader records = reader.rows();
             Object row = null;
             List fields = inspector.getAllStructFieldRefs();
-            for(int i = 0; i < fields.size(); ++i) {
-                System.out.print(((StructField)fields.get(i)).getFieldObjectInspector().getTypeName() + '\t');
-            }
+         /*   for(int i = 0; i < fields.size(); ++i) {
+                System.out.print(((StructField)fields.get(i)).getFieldObjectInspector().g + '\t');
+            }*/
             while (records.hasNext()) {
                 row = records.next(row);
                 List value_lst = inspector.getStructFieldsDataAsList(row);
@@ -50,7 +49,8 @@ public class OrcReader implements Runnable {
                     }
                     builder.append('\t');
                 }
-           //     System.out.println(builder);
+                StringBuilder builder1=new StringBuilder("Builder ");
+                System.out.println(builder1.append(builder));
                 queue.add(value_lst);
             }
         } catch (IOException e) {
