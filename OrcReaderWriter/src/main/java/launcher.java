@@ -19,20 +19,21 @@ import java.util.concurrent.TimeUnit;
 
 public class launcher {
     private static final Configuration CONF = new Configuration();
-    private static final Logger sLogger = Logger.getLogger(launcher.class);
     public static void main(String args[]) throws IOException {
-        String path="";
+        String path="data/OrcInput";
         Path filepath= new Path(path);
         FileSystem hdfs = FileSystem.get(CONF);
         FileStatus[] status = hdfs.listStatus(filepath);
         Queue queue = new LinkedBlockingQueue();
         int i = 0;
-        ExecutorService executor = Executors.newFixedThreadPool(5);
+        ExecutorService executor = Executors.newFixedThreadPool(6);
         for (FileStatus file : status) {
-            System.out.println(file.getPath().getFileSystem(CONF)+" "+file.getPath());
-            LogSF.info(sLogger,"Thread {} started: ", i++);
-            LogSF.info(sLogger,"Reading file {} ", file.getPath().getName());
-            executor.submit(new OrcReader(file.getPath(),queue));
+            System.out.println(file);
+            System.out.println("Thread {} started: "+ i);
+            if(!file.getPath().getName().equals("_SUCCESS")) {
+                System.out.println("Reading file {} " + file.getPath().getName());
+                executor.execute(new OrcReader(file.getPath(), queue));
+            }
         }
         executor.shutdown();
         try {
@@ -40,6 +41,8 @@ public class launcher {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
+        while (!queue.isEmpty()){
+            System.out.println(queue.poll());
+        }
     }
 }
