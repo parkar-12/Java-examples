@@ -25,14 +25,15 @@ public class launcher {
         FileSystem hdfs = FileSystem.get(CONF);
         FileStatus[] status = hdfs.listStatus(filepath);
         Queue queue = new LinkedBlockingQueue();
+        Queue jsonStrings =new LinkedBlockingQueue();
         int i = 0;
         ExecutorService executor = Executors.newFixedThreadPool(6);
         for (FileStatus file : status) {
-            System.out.println(file);
+          //  System.out.println(file);
             System.out.println("Thread {} started: "+ i);
             if(!file.getPath().getName().equals("_SUCCESS")) {
                 System.out.println("Reading file {} " + file.getPath().getName());
-                executor.execute(new OrcReader(file.getPath(), queue));
+                executor.execute(new OrcReader(file.getPath(), queue,jsonStrings));
             }
         }
         executor.shutdown();
@@ -41,8 +42,10 @@ public class launcher {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        List input =new ArrayList();
         while (!queue.isEmpty()){
-            System.out.println(queue.poll());
+            input.add(queue.poll());
         }
+        System.out.println(input);
     }
 }
